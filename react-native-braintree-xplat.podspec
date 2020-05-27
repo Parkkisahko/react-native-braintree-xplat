@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "8.0"
   s.ios.deployment_target = '8.0'
 
-  s.source       = { :git => package['repository']['url'], :branch => "#dont_include_sdk" }
+  s.source       = { :git => package['repository']['url'], :tag => "#{s.version}" }
   s.source_files  = "ios/**/*.{h,m}"
 
   s.dependency 'React'
