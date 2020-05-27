@@ -6,15 +6,15 @@
 //  Copyright © 2016 Rickard Ekman. All rights reserved.
 //
 
-#import <React/RCTBridgeModule.h>
-#import <React/RCTUtils.h>
-#import <React/RCTConvert.h>
+#import "RCTBridgeModule.h"
+#import "RCTUtils.h"
+#import "RCTConvert.h"
 
 #import "BraintreeCore.h"
 #import "BraintreePayPal.h"
 #import "BraintreeCard.h"
 #import "BraintreeUI.h"
-#import "Braintree3DSecure.h"
+//#import "Braintree3DSecure.h"
 #import "BTDataCollector.h"
 #import "PPDataCollector.h"
 

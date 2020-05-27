@@ -9,7 +9,7 @@
     "url": "https://github.com/kraffslol"
   },
   "license": "MIT",
-  "respository": {
+  "repository": {
     "type": "git",
     "url": "git@github.com:kraffslol/react-native-braintree-xplat.git"
   }
