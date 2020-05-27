@@ -1,11 +1,11 @@
 # Braintree iOS SDK
 
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![Travis CI build status](https://travis-ci.org/braintree/braintree_ios.svg?branch=master)](https://travis-ci.org/braintree/braintree_ios)
+<!--[![Travis CI build status](https://travis-ci.org/braintree/braintree_ios.svg?branch=master)](https://travis-ci.org/braintree/braintree_ios) -->
 
 Welcome to Braintree's iOS SDK. This library will help you accept card and alternative payments in your iOS app.
 
-**The Braintree iOS SDK requires Xcode 8+ and a Base SDK of iOS 9+**. It permits a Deployment Target of iOS 7.0 or higher.
+**The Braintree iOS SDK requires Xcode 10+**. It permits a Deployment Target of iOS 8.0 or higher.
 
 ## Supported Payment Methods
 
@@ -55,7 +55,8 @@ Here are a few ways to get in touch:
 ## Help
 
 * Read the headers
-* [Read the docs](https://developers.braintreepayments.com/ios/sdk/client)
+* [Read the Braintree docs](https://developers.braintreepayments.com/ios/sdk/client)
+* [Check out the reference docs](https://braintree.github.io/braintree_ios/)
 * Find a bug? [Open an issue](https://github.com/braintree/braintree_ios/issues)
 * Want to contribute? [Check out contributing guidelines](CONTRIBUTING.md) and [submit a pull request](https://help.github.com/articles/creating-a-pull-request).
 

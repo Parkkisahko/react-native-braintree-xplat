@@ -38,15 +38,9 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
 
     CLAuthorizationStatus locationStatus = [CLLocationManager authorizationStatus];
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
-    if (@available(iOS 8.0, watchOS 3.0, *)) {
-#endif
     if ((locationStatus != kCLAuthorizationStatusAuthorizedWhenInUse && locationStatus != kCLAuthorizationStatusAuthorizedAlways) || ![CLLocationManager locationServicesEnabled]) {
         self.kount.locationCollectorConfig = KLocationCollectorConfigSkip;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
-    }
-#endif
 }
 
 #pragma mark - Accessors
@@ -74,16 +68,16 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
 #pragma mark - Public methods
 
 - (void)collectCardFraudData:(void (^)(NSString * _Nonnull))completion {
-    [self collectFraudDataForCard:YES forPayPal:NO completion:completion];
+    [self collectDeviceDataForCard:YES completion:completion];
 }
 
-- (void)collectFraudData:(void (^)(NSString * _Nonnull))completion {
-    [self collectFraudDataForCard:YES forPayPal:YES completion:completion];
+- (void)collectDeviceData:(void (^)(NSString * _Nonnull))completion {
+    [self collectDeviceDataForCard:YES completion:completion];
 }
 
 #pragma mark - Helper methods
 
-- (void)collectFraudDataForCard:(BOOL)includeCard forPayPal:(BOOL)includePayPal completion:(void (^)(NSString *deviceData))completion {
+- (void)collectDeviceDataForCard:(BOOL)includeCard completion:(void (^)(NSString *deviceData))completion {
     [self.apiClient fetchOrReturnRemoteConfiguration:^(BTConfiguration * _Nullable configuration, NSError * _Nullable __unused _) {
         NSMutableDictionary *dataDictionary = [NSMutableDictionary new];
 
@@ -111,11 +105,9 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
             }];
         }
         
-        if (includePayPal) {
-            NSString *payPalClientMetadataId = [BTDataCollector generatePayPalClientMetadataId];
-            if (payPalClientMetadataId) {
-                dataDictionary[@"correlation_id"] = payPalClientMetadataId;
-            }
+        NSString *payPalClientMetadataId = [BTDataCollector generatePayPalClientMetadataId];
+        if (payPalClientMetadataId) {
+            dataDictionary[@"correlation_id"] = payPalClientMetadataId;
         }
 
         dispatch_group_notify(collectorDispatchGroup, dispatch_get_main_queue(), ^{
@@ -134,7 +126,7 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
             
             // If only PayPal fraud is being collected, immediately inform the delegate that collection has
             // finished, since PayPal fraud does not allow us to know when it has officially finished collection.
-            if (!includeCard && includePayPal) {
+            if (!includeCard) {
                 [self onCollectorSuccess];
             }
             
@@ -145,7 +137,7 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
     }];
 }
 
-- (NSString *)collectFraudDataForCard:(BOOL)includeCard forPayPal:(BOOL)includePayPal
+- (NSString *)collectDeviceDataForCard:(BOOL)includeCard forPayPal:(BOOL)includePayPal
 {
     [self onCollectorStart];
     NSMutableDictionary *dataDictionary = [NSMutableDictionary new];
@@ -268,16 +260,20 @@ NSString * const BTDataCollectorKountErrorDomain = @"com.braintreepayments.BTDat
 /// we will want to collect data (for card transactions) with PayPal as well. If this becomes the case,
 /// we can modify this method to include a clientMetadataID without breaking the public interface.
 - (NSString *)collectCardFraudData {
-    return [self collectFraudDataForCard:YES forPayPal:NO];
+    return [self collectDeviceDataForCard:YES forPayPal:NO];
 }
 
 - (NSString *)collectPayPalClientMetadataId {
-    return [self collectFraudDataForCard:NO forPayPal:YES];
+    return [self collectDeviceDataForCard:NO forPayPal:YES];
 }
 
 /// Similar to `collectCardFraudData` but with the addition of the payPalClientMetadataId, if available.
 - (NSString *)collectFraudData {
-    return [self collectFraudDataForCard:YES forPayPal:YES];
+    return [self collectDeviceDataForCard:YES forPayPal:YES];
+}
+
+- (void)collectFraudData:(void (^)(NSString * _Nonnull))completion {
+    [self collectDeviceDataForCard:YES completion:completion];
 }
 
 @end

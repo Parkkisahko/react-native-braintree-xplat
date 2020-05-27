@@ -7,6 +7,7 @@
 #import "BTAPIPinnedCertificates.h"
 #import "BTURLUtils.h"
 #import "BTLogger_Internal.h"
+#import "BTPayPalUAT.h"
 
 @interface BTHTTP () <NSURLSessionDelegate>
 
@@ -22,12 +23,20 @@
     return nil;
 }
 
-- (instancetype)initWithBaseURL:(NSURL *)URL authorizationFingerprint:(NSString *)authorizationFingerprint {
+- (instancetype)initWithBaseURL:(NSURL *)URL {
     self = [super init];
+    if (self) {
+        self.baseURL = URL;
+    }
+    
+    return self;
+}
+
+- (instancetype)initWithBaseURL:(NSURL *)URL authorizationFingerprint:(NSString *)authorizationFingerprint {
+    self = [self initWithBaseURL:URL];
     if (self) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         configuration.HTTPAdditionalHeaders = self.defaultHeaders;
-        self.baseURL = URL;
 
         NSOperationQueue *delegateQueue = [[NSOperationQueue alloc] init];
         delegateQueue.name = @"com.braintreepayments.BTHTTP";
@@ -41,10 +50,9 @@
 }
 
 - (instancetype)initWithBaseURL:(nonnull NSURL *)URL tokenizationKey:(nonnull NSString *)tokenizationKey {
-    if (self = [super init]) {
+    if (self = [self initWithBaseURL:URL]) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         configuration.HTTPAdditionalHeaders = self.defaultHeaders;
-        self.baseURL = URL;
 
         NSOperationQueue *delegateQueue = [[NSOperationQueue alloc] init];
         delegateQueue.name = @"com.braintreepayments.BTHTTP";
@@ -61,6 +69,10 @@
     return [self initWithBaseURL:[clientToken.json[@"clientApiUrl"] asURL] authorizationFingerprint:clientToken.authorizationFingerprint];
 }
 
+- (instancetype)initWithPayPalUAT:(BTPayPalUAT *)payPalUAT {
+    return [self initWithBaseURL:payPalUAT.baseBraintreeURL authorizationFingerprint:payPalUAT.token];
+}
+
 - (instancetype)copyWithZone:(NSZone *)zone {
     BTHTTP *copiedHTTP;
     if (self.authorizationFingerprint) {
@@ -71,6 +83,15 @@
     
     copiedHTTP.pinnedCertificates = [_pinnedCertificates copy];
     return copiedHTTP;
+}
+
+- (void)setSession:(NSURLSession *)session {
+    if (_session) {
+        // If we already have a session, we need to invalidate it so that the session delegate is released to prevent a retain cycle
+        [_session invalidateAndCancel];
+    }
+
+    _session = session;
 }
 
 #pragma mark - HTTP Methods
@@ -133,6 +154,9 @@
         fullPathURL = self.baseURL;
     }
 
+    if (parameters == nil) {
+        parameters = [NSDictionary dictionary];
+    }
     NSMutableDictionary *mutableParameters = [NSMutableDictionary dictionaryWithDictionary:parameters];
     if (self.authorizationFingerprint) {
         mutableParameters[@"authorization_fingerprint"] = self.authorizationFingerprint;
@@ -159,8 +183,7 @@
 
     if ([method isEqualToString:@"GET"] || [method isEqualToString:@"DELETE"]) {
         if (isNotDataURL) {
-            NSString *encodedParametersString = [BTURLUtils queryStringWithDictionary:parameters];
-            components.percentEncodedQuery = encodedParametersString;
+            components.percentEncodedQuery = [BTURLUtils queryStringWithDictionary:parameters];
         }
         request = [NSMutableURLRequest requestWithURL:components.URL];
     } else {
@@ -225,7 +248,7 @@
             json = (data.length == 0) ? [BTJSON new] : [[BTJSON alloc] initWithData:data];
             if (!json.isError) {
                 errorUserInfo[BTHTTPJSONResponseBodyKey] = json;
-                NSString *errorResponseMessage = [json[@"error"][@"message"] asString];
+                NSString *errorResponseMessage = [json[@"error"][@"developer_message"] isString] ? [json[@"error"][@"developer_message"] asString] : [json[@"error"][@"message"] asString];
                 if (errorResponseMessage) {
                     errorUserInfo[NSLocalizedDescriptionKey] = errorResponseMessage;
                 }

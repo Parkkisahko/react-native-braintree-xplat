@@ -13,9 +13,9 @@
 
 @property (nonatomic, copy) NSString *kind;
 
-@property (nonatomic, assign) long timestamp;
+@property (nonatomic, assign) uint64_t timestamp;
 
-+ (nonnull instancetype)event:(nonnull NSString *)eventKind withTimestamp:(long)timestamp;
++ (nonnull instancetype)event:(nonnull NSString *)eventKind withTimestamp:(uint64_t)timestamp;
 
 /// Event serialized to JSON
 - (nonnull NSDictionary *)json;
@@ -24,7 +24,7 @@
 
 @implementation BTAnalyticsEvent
 
-+ (instancetype)event:(NSString *)eventKind withTimestamp:(long)timestamp {
++ (instancetype)event:(NSString *)eventKind withTimestamp:(uint64_t)timestamp {
     BTAnalyticsEvent *event = [[BTAnalyticsEvent alloc] init];
     event.kind = eventKind;
     event.timestamp = timestamp;
@@ -32,7 +32,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ at %ld", self.kind, (long)self.timestamp];
+    return [NSString stringWithFormat:@"%@ at %llu", self.kind, (uint64_t)self.timestamp];
 }
 
 - (NSDictionary *)json {
@@ -163,6 +163,9 @@ NSString * const BTAnalyticsServiceErrorDomain = @"com.braintreepayments.BTAnaly
                 self.http = [[BTHTTP alloc] initWithBaseURL:analyticsURL authorizationFingerprint:self.apiClient.clientToken.authorizationFingerprint];
             } else if (self.apiClient.tokenizationKey) {
                 self.http = [[BTHTTP alloc] initWithBaseURL:analyticsURL tokenizationKey:self.apiClient.tokenizationKey];
+            } else if (self.apiClient.payPalUAT) {
+                self.http = [[BTHTTP alloc] initWithBaseURL:analyticsURL authorizationFingerprint:self.apiClient.payPalUAT.token];
+                return;
             }
             if (!self.http) {
                 NSError *error = [NSError errorWithDomain:BTAnalyticsServiceErrorDomain code:BTAnalyticsServiceErrorTypeInvalidAPIClient userInfo:@{ NSLocalizedDescriptionKey : @"API client must have client token or tokenization key" }];
@@ -196,7 +199,7 @@ NSString * const BTAnalyticsServiceErrorDomain = @"com.braintreepayments.BTAnaly
                 NSMutableDictionary *metadataParameters = [NSMutableDictionary dictionary];
                 [metadataParameters addEntriesFromDictionary:session.metadataParameters];
                 metadataParameters[@"sessionId"] = session.sessionID;
-                metadataParameters[@"integration"] = session.integration;
+                metadataParameters[@"integrationType"] = session.integration;
                 metadataParameters[@"source"] = session.source;
                 
                 NSMutableDictionary *postParameters = [NSMutableDictionary dictionary];
@@ -253,8 +256,8 @@ NSString * const BTAnalyticsServiceErrorDomain = @"com.braintreepayments.BTAnaly
 #pragma mark - Helpers
 
 - (void)enqueueEvent:(NSString *)eventKind {
-    long timestampInSeconds = round([[NSDate date] timeIntervalSince1970]);
-    BTAnalyticsEvent *event = [BTAnalyticsEvent event:eventKind withTimestamp:timestampInSeconds];
+    uint64_t timestampInMilliseconds = ([[NSDate date] timeIntervalSince1970] * 1000);
+    BTAnalyticsEvent *event = [BTAnalyticsEvent event:eventKind withTimestamp:timestampInMilliseconds];
 
     BTAnalyticsSession *session = [BTAnalyticsSession sessionWithID:self.apiClient.metadata.sessionId
                                                              source:self.apiClient.metadata.sourceString

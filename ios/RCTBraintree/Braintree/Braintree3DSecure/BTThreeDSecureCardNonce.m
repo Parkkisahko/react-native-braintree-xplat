@@ -5,7 +5,6 @@
 #import <BraintreeCard/BTCardNonce_Internal.h>
 #endif
 
-
 @interface BTThreeDSecureCardNonce ()
 
 @property (nonatomic, strong) BTJSON *threeDSecureJSON;
@@ -20,9 +19,16 @@
                       lastTwo:(NSString *)lastTwo
              threeDSecureJSON:(BTJSON *)threeDSecureJSON
                     isDefault:(BOOL)isDefault
-                     cardJSON:(BTJSON *)cardJSON
-{
-    self = [super initWithNonce:nonce description:description cardNetwork:cardNetwork lastTwo:lastTwo isDefault:isDefault cardJSON:cardJSON];
+                     cardJSON:(BTJSON *)cardJSON {
+    
+    self = [super initWithNonce:nonce
+                    description:description
+                    cardNetwork:cardNetwork
+                        lastTwo:lastTwo
+                       lastFour:nil
+                      isDefault:isDefault
+                       cardJSON:cardJSON
+                authInsightJSON:nil];
     if (self) {
         _threeDSecureJSON = threeDSecureJSON;
     }

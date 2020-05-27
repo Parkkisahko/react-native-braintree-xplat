@@ -4,7 +4,8 @@
 #import <BraintreeCore/BraintreeCore.h>
 #import <BraintreeUI/BraintreeUI.h>
 #import <BraintreeVenmo/BraintreeVenmo.h>
-#import "BraintreeDemoSettings.h"
+
+#import "Demo-Swift.h"
 
 @interface BraintreeDemoDropInLegacyViewController () <BTDropInViewControllerDelegate>
 
@@ -24,7 +25,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.title = @"Drop In (Legacy)";
+    self.title = NSLocalizedString(@"Drop In (Legacy)", nil);
 
     UIButton *dropInButton = [UIButton buttonWithType:UIButtonTypeSystem];
     dropInButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -33,7 +34,7 @@
     [dropInButton setTitleColor:[UIColor whiteColor]forState:UIControlStateNormal];
     dropInButton.layer.cornerRadius = 5.0f;
     dropInButton.contentEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8);
-    [dropInButton setTitle:@"Buy Now" forState:UIControlStateNormal];
+    [dropInButton setTitle:NSLocalizedString(@"Buy Now", nil) forState:UIControlStateNormal];
     [dropInButton sizeToFit];
 
     [self.view addSubview:dropInButton];
@@ -52,7 +53,7 @@
     BTDropInViewController *dropIn = [[BTDropInViewController alloc] initWithAPIClient:self.apiClient];
     dropIn.delegate = self;
     dropIn.paymentRequest = paymentRequest;
-    dropIn.title = @"Check Out";
+    dropIn.title = NSLocalizedString(@"Check Out", nil);
 
     if ([BraintreeDemoSettings useModalPresentation]) {
         self.progressBlock(@"Presenting Drop In Modally");
