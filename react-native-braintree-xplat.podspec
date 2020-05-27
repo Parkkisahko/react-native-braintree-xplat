@@ -18,4 +18,5 @@ Pod::Spec.new do |s|
   s.dependency 'React'
   s.dependency 'Braintree', '4.33'
   s.dependency 'Braintree/DataCollector'
+  s.dependency 'Braintree/3D-Secure'
 end
