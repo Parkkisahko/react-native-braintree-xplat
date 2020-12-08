@@ -16,7 +16,8 @@ Pod::Spec.new do |s|
   s.source_files  = "ios/**/*.{h,m}"
 
   s.dependency 'React'
-  s.dependency 'Braintree', '4.33'
+  s.dependency 'Braintree', '4.36.1'
   s.dependency 'Braintree/DataCollector'
   s.dependency 'Braintree/3D-Secure'
+  s.dependency 'Braintree/PaymentFlow'
 end
