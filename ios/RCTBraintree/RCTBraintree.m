@@ -224,6 +224,11 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
 
 #pragma mark - BTViewControllerPresentingDelegate
 
+- (void)setupPaymentFlowDriver {
+    self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
+    self.paymentFlowDriver.viewControllerPresentingDelegate = self;
+}
+
 - (void)paymentDriver:(id)paymentDriver requestsPresentationOfViewController:(UIViewController *)viewController {
     [self.reactRoot presentViewController:viewController animated:YES completion:nil];
 }

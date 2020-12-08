@@ -27,6 +27,7 @@
 #import "BraintreeCard.h"
 #import "BraintreeUI.h"
 #import "Braintree3DSecure.h"
+#import "BraintreePaymentFlow.h"
 #import "BTDataCollector.h"
 #import "PPDataCollector.h"
 
@@ -39,6 +40,8 @@
 
 @property (nonatomic, strong) RCTResponseSenderBlock callback;
 @property (nonatomic, strong) NSDictionary *threeDSecureOptions;
+
+@property (nonatomic, strong, readwrite) BTPaymentFlowDriver *paymentFlowDriver;
 
 + (instancetype)sharedInstance;
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
