@@ -79,6 +79,21 @@ var Braintree = {
     });
   },
 
+  requestCardholderChallange(parameters) {
+    return new Promise(function(resolve, reject) {
+      RCTBraintree.requestCardholderChallange(parameters, function(
+        err,
+        nonce
+      ) {
+        nonce !== null
+          ? resolve(nonce)
+          : reject(
+            err
+          )
+      })
+    })
+  },
+
   getDeviceData(options = {}) {
     return new Promise(function(resolve, reject) {
       RCTBraintree.getDeviceData(options, function(err, deviceData) {

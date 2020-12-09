@@ -27,9 +27,9 @@
 #import "BraintreeCard.h"
 #import "BraintreeUI.h"
 #import "Braintree3DSecure.h"
-#import "BraintreePaymentFlow.h"
 #import "BTDataCollector.h"
 #import "PPDataCollector.h"
+#import "BraintreePaymentFlow.h"
 
 @interface RCTBraintree : UIViewController <RCTBridgeModule, BTDropInViewControllerDelegate, BTViewControllerPresentingDelegate>
 
@@ -40,6 +40,8 @@
 
 @property (nonatomic, strong) RCTResponseSenderBlock callback;
 @property (nonatomic, strong) NSDictionary *threeDSecureOptions;
+
+@property (nonatomic, strong) BTCardNonce *tokenizedCard;
 
 @property (nonatomic, strong, readwrite) BTPaymentFlowDriver *paymentFlowDriver;
 

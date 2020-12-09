@@ -14,6 +14,7 @@
 
 static NSString *URLScheme;
 
+
 + (instancetype)sharedInstance {
     static RCTBraintree *_sharedInstance = nil;
     static dispatch_once_t onceToken;
@@ -142,6 +143,7 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
                       NSArray *args = @[];
 
                       if ( error == nil ) {
+                          self.tokenizedCard = tokenizedCard;
                           args = @[[NSNull null], tokenizedCard.nonce];
                       } else {
                           NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
@@ -164,6 +166,45 @@ RCT_EXPORT_METHOD(getCardNonce: (NSDictionary *)parameters callback: (RCTRespons
 
                       callback(args);
                   }];
+}
+
+RCT_EXPORT_METHOD(requestCardholderChallange: (NSDictionary *)options callback: (RCTResponseSenderBlock)callback)
+{
+    self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
+    self.paymentFlowDriver.viewControllerPresentingDelegate = self;
+    BTThreeDSecureRequest *threeDSecureRequest = [[BTThreeDSecureRequest alloc] init];
+    threeDSecureRequest.amount = [NSDecimalNumber decimalNumberWithString:options[@"amount"]];
+    threeDSecureRequest.email = options[@"email"];
+    threeDSecureRequest.nonce = self.tokenizedCard.nonce;
+    threeDSecureRequest.versionRequested = BTThreeDSecureVersion2;
+
+    threeDSecureRequest.threeDSecureRequestDelegate = self;
+
+    [self.paymentFlowDriver startPaymentFlow:threeDSecureRequest completion:^(BTPaymentFlowResult *result, NSError *error) {
+        NSArray *args = @[];
+        if (error) {
+            // Handle error
+            args = @[error, [NSNull null]];
+        } else if (result) {
+            BTThreeDSecureResult *threeDSecureResult = (BTThreeDSecureResult *)result;
+
+            if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShiftPossible) {
+                if (threeDSecureResult.tokenizedCard.threeDSecureInfo.liabilityShifted) {
+                    // 3D Secure authentication success
+                    args = @[[NSNull null], threeDSecureResult.tokenizedCard.nonce];
+                } else {
+                    // 3D Secure authentication failed
+                    args = @[@"3DSECURE_AUTHENTICATION_FAILED", [NSNull null]];
+                }
+            } else {
+                // 3D Secure authentication was not possible                
+                args = @[@"3DSECURE_AUTHENTICATION_NOT_POSSIBLE", [NSNull null]];
+            }
+            // Use the `threeDSecureResult.tokenizedCard.nonce`
+        }
+        callback(args);
+    }];
+
 }
 
 RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
@@ -222,12 +263,12 @@ RCT_EXPORT_METHOD(getDeviceData:(NSDictionary *)options callback:(RCTResponseSen
     return NO;
 }
 
-#pragma mark - BTViewControllerPresentingDelegate
-
-- (void)setupPaymentFlowDriver {
-    self.paymentFlowDriver = [[BTPaymentFlowDriver alloc] initWithAPIClient:self.braintreeClient];
-    self.paymentFlowDriver.viewControllerPresentingDelegate = self;
+- (void)onLookupComplete:(__unused BTThreeDSecureRequest *)request result:(__unused BTThreeDSecureLookup *)lookup next:(void (^)(void))next {
+    // Optionally inspect the lookup result and prepare UI if a challenge is required
+    next();
 }
+
+#pragma mark - BTViewControllerPresentingDelegate
 
 - (void)paymentDriver:(id)paymentDriver requestsPresentationOfViewController:(UIViewController *)viewController {
     [self.reactRoot presentViewController:viewController animated:YES completion:nil];
